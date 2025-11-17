@@ -8,7 +8,8 @@ A modern landing page built with Next.js, featuring interactive 3D effects power
 - Gradient text animations
 - Typing text effect
 - Responsive design
-- Email waitlist signup
+- Email waitlist signup with Resend integration
+- Real-time email validation and error handling
 
 ## Tech Stack
 
@@ -16,6 +17,7 @@ A modern landing page built with Next.js, featuring interactive 3D effects power
 - **React 18** - UI library
 - **TypeScript** - Type safety
 - **Three.js** - 3D graphics
+- **Resend** - Email collection and newsletters
 
 ## Getting Started
 
@@ -26,17 +28,30 @@ A modern landing page built with Next.js, featuring interactive 3D effects power
 
 ### Installation
 
-1. Install dependencies:
+1. Clone the repository and install dependencies:
 ```bash
 npm install
 ```
 
-2. Run the development server:
+2. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local` and add your Resend API key:
+```
+RESEND_API_KEY=your_resend_api_key_here
+RESEND_AUDIENCE_ID=your_audience_id_here
+```
+
+Get your API key from [resend.com/api-keys](https://resend.com/api-keys)
+
+3. Run the development server:
 ```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Build for Production
 
@@ -78,22 +93,76 @@ vercel
 
 ## Environment Variables
 
-No environment variables required for basic deployment.
+### Required for Email Collection
+
+Create a `.env.local` file (see `.env.example`):
+
+```bash
+# Required: Resend API Key
+RESEND_API_KEY=your_api_key_here
+
+# Required: Resend Audience ID
+RESEND_AUDIENCE_ID=your_audience_id_here
+```
+
+### Setting Up Resend
+
+1. **Sign up at [resend.com](https://resend.com)** - Free tier includes 3,000 emails/month
+
+2. **Get your API key:**
+   - Go to [API Keys](https://resend.com/api-keys)
+   - Create a new API key
+   - Copy the key to your `.env.local` file
+
+3. **Create an Audience:**
+   - Go to [Audiences](https://resend.com/audiences)
+   - Click "Create Audience"
+   - Name it (e.g., "TendLife Waitlist")
+   - Copy the Audience ID to your `.env.local` file
+
+4. **Add to Vercel:**
+   - Go to your project settings in Vercel
+   - Navigate to "Environment Variables"
+   - Add `RESEND_API_KEY` with your API key
+   - Add `RESEND_AUDIENCE_ID` with your audience ID
+   - Redeploy your app
+
+### How Email Collection Works
+
+- User submits email via the landing page form
+- Next.js API route (`/api/subscribe`) validates the email
+- Contact is added to your Resend audience
+- User sees success/error message based on the result
+
+### Sending Weekly Newsletters
+
+Once you've collected emails in your Resend audience:
+
+1. Go to [Resend Broadcasts](https://resend.com/broadcasts)
+2. Create a new broadcast
+3. Select your audience
+4. Compose your newsletter
+5. Send or schedule
 
 ## Project Structure
 
 ```
 FinWellness/
 ├── app/
-│   ├── layout.tsx       # Root layout with metadata
-│   ├── page.tsx         # Home page
-│   └── globals.css      # Global styles
+│   ├── api/
+│   │   └── subscribe/
+│   │       └── route.ts     # Email subscription API endpoint
+│   ├── layout.tsx           # Root layout with metadata
+│   ├── page.tsx             # Home page
+│   └── globals.css          # Global styles
 ├── components/
 │   └── TendLifeLanding.tsx  # Main landing page component
-├── public/              # Static assets
-├── package.json         # Dependencies
-├── tsconfig.json        # TypeScript config
-└── next.config.js       # Next.js config
+├── public/                  # Static assets
+├── .env.local               # Environment variables (not in git)
+├── .env.example             # Environment variables template
+├── package.json             # Dependencies
+├── tsconfig.json            # TypeScript config
+└── next.config.js           # Next.js config
 ```
 
 ## License
