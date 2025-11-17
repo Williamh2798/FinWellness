@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 
@@ -142,8 +144,8 @@ void main(){
 const MAX_CLICKS = 10;
 
 const PixelBlast = ({ variant = 'circle', pixelSize = 6, color = '#8BC9A3', patternScale = 3, patternDensity = 1.2, pixelSizeJitter = 0.5, enableRipples = true, rippleIntensityScale = 1.5, rippleThickness = 0.12, rippleSpeed = 0.4, speed = 0.6, edgeFade = 0.25 }) => {
-  const containerRef = useRef(null);
-  const threeRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const threeRef = useRef<any>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -156,7 +158,7 @@ const PixelBlast = ({ variant = 'circle', pixelSize = 6, color = '#8BC9A3', patt
       t.quad?.geometry.dispose();
       t.material.dispose();
       t.renderer.dispose();
-      if (t.renderer.domElement.parentElement === container) 
+      if (t.renderer.domElement.parentElement === container)
         container.removeChild(t.renderer.domElement);
       threeRef.current = null;
     }
@@ -209,7 +211,7 @@ const PixelBlast = ({ variant = 'circle', pixelSize = 6, color = '#8BC9A3', patt
 
     const timeOffset = (window.crypto?.getRandomValues ? (() => { const u = new Uint32Array(1); window.crypto.getRandomValues(u); return u[0] / 0xffffffff; })() : Math.random()) * 1000;
 
-    const onPointerDown = e => {
+    const onPointerDown = (e: PointerEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
       const scaleX = renderer.domElement.width / rect.width;
       const scaleY = renderer.domElement.height / rect.height;
@@ -221,7 +223,7 @@ const PixelBlast = ({ variant = 'circle', pixelSize = 6, color = '#8BC9A3', patt
       if (threeRef.current) threeRef.current.clickIx = (ix + 1) % MAX_CLICKS;
     };
 
-    renderer.domElement.addEventListener('pointerdown', onPointerDown, { passive: true });
+    renderer.domElement.addEventListener('pointerdown', onPointerDown, { passive: true } as any);
 
     let raf = 0;
     const animate = () => {
@@ -249,7 +251,7 @@ const PixelBlast = ({ variant = 'circle', pixelSize = 6, color = '#8BC9A3', patt
   return <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />;
 };
 
-const GradientText = ({ children, colors = ['#40ffaa', '#4079ff', '#40ffaa', '#4079ff', '#40ffaa'], animationSpeed = 8 }) => {
+const GradientText = ({ children, colors = ['#40ffaa', '#4079ff', '#40ffaa', '#4079ff', '#40ffaa'], animationSpeed = 8 }: { children: React.ReactNode, colors?: string[], animationSpeed?: number }) => {
   return (
     <>
       <style>{`@keyframes gradientShift { 0%, 100% { background-position: 0% center; } 50% { background-position: 100% center; }}`}</style>
@@ -260,14 +262,14 @@ const GradientText = ({ children, colors = ['#40ffaa', '#4079ff', '#40ffaa', '#4
   );
 };
 
-const TextType = ({ text, typingSpeed = 50, initialDelay = 0, pauseDuration = 2000, deletingSpeed = 30, loop = true, showCursor = true, cursorCharacter = '|', cursorBlinkDuration = 0.5, startOnVisible = false }) => {
+const TextType = ({ text, typingSpeed = 50, initialDelay = 0, pauseDuration = 2000, deletingSpeed = 30, loop = true, showCursor = true, cursorCharacter = '|', cursorBlinkDuration = 0.5, startOnVisible = false }: { text: string | string[], typingSpeed?: number, initialDelay?: number, pauseDuration?: number, deletingSpeed?: number, loop?: boolean, showCursor?: boolean, cursorCharacter?: string, cursorBlinkDuration?: number, startOnVisible?: boolean }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(!startOnVisible);
   const [cursorOpacity, setCursorOpacity] = useState(1);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
 
@@ -286,7 +288,7 @@ const TextType = ({ text, typingSpeed = 50, initialDelay = 0, pauseDuration = 20
 
   useEffect(() => {
     if (!isVisible) return;
-    let timeout;
+    let timeout: NodeJS.Timeout;
     const currentText = textArray[currentTextIndex];
 
     const executeTypingAnimation = () => {
@@ -346,14 +348,14 @@ export default function TendLifeLanding() {
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', backgroundColor: '#0f0f23', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <PixelBlast variant="circle" pixelSize={6} color="#8BC9A3" patternScale={3} patternDensity={1.2} pixelSizeJitter={0.5} enableRipples rippleSpeed={0.4} rippleThickness={0.12} rippleIntensityScale={1.5} speed={0.6} edgeFade={0.25} />
-      
+
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 40px', textAlign: 'center', color: 'white' }}>
         <h1 style={{ fontSize: '80px', fontWeight: '800', margin: '0 0 32px 0', lineHeight: '1', letterSpacing: '-0.04em', textShadow: '0 2px 40px rgba(0, 0, 0, 0.5)' }}>
           <GradientText colors={['#40ffaa', '#4079ff', '#40ffaa', '#4079ff', '#40ffaa']} animationSpeed={6}>TendLife</GradientText>
         </h1>
 
         <h2 style={{ fontSize: '80px', fontWeight: '800', margin: '0 0 48px 0', lineHeight: '1', letterSpacing: '-0.04em', color: 'white', textShadow: '0 2px 40px rgba(0, 0, 0, 0.5)' }}>
-          <TextType 
+          <TextType
             text="Track. Plan. Thrive."
             typingSpeed={100}
             deletingSpeed={50}
