@@ -337,11 +337,40 @@ const TextType = ({ text, typingSpeed = 50, initialDelay = 0, pauseDuration = 20
 export default function TendLifeLanding() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = () => {
-    if (email) {
+  const handleSubmit = async () => {
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe');
+      }
+
       setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 3000);
+      setEmail('');
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -377,12 +406,13 @@ export default function TendLifeLanding() {
             @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; }}
           `}</style>
           <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSubmit()} style={{ padding: '14px 24px', fontSize: '15px', borderRadius: '10px', border: '2px solid rgba(64, 255, 170, 0.3)', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'white', outline: 'none', width: '300px', fontFamily: 'inherit', transition: 'all 0.3s ease', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' }} onFocus={(e) => { e.currentTarget.style.borderColor = '#40ffaa'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(64, 255, 170, 0.3), 0 0 20px rgba(64, 255, 170, 0.2)'; }} onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(64, 255, 170, 0.3)'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)'; }} />
-          <button onClick={handleSubmit} style={{ padding: '14px 32px', fontSize: '15px', fontWeight: '700', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #40ffaa 0%, #4079ff 100%)', backgroundSize: '200% 200%', color: 'white', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.3s ease', boxShadow: '0 4px 15px rgba(64, 255, 170, 0.4)', animation: 'shimmer 8s linear infinite' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(64, 255, 170, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(64, 255, 170, 0.4)'; }}>
-            {submitted ? '✓ Joined!' : 'Join Waitlist'}
+          <button onClick={handleSubmit} disabled={loading} style={{ padding: '14px 32px', fontSize: '15px', fontWeight: '700', borderRadius: '10px', border: 'none', background: loading ? 'rgba(64, 255, 170, 0.5)' : 'linear-gradient(135deg, #40ffaa 0%, #4079ff 100%)', backgroundSize: '200% 200%', color: 'white', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.3s ease', boxShadow: '0 4px 15px rgba(64, 255, 170, 0.4)', animation: loading ? 'none' : 'shimmer 8s linear infinite', opacity: loading ? 0.7 : 1 }} onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(64, 255, 170, 0.6)'; } }} onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(64, 255, 170, 0.4)'; } }}>
+            {loading ? 'Subscribing...' : submitted ? '✓ Joined!' : 'Join Waitlist'}
           </button>
         </div>
 
         {submitted && <p style={{ marginTop: '24px', color: '#8BC9A3', fontSize: '14px', fontWeight: '500' }}>Thanks for joining! We'll be in touch soon.</p>}
+        {error && <p style={{ marginTop: '24px', color: '#ff6b6b', fontSize: '14px', fontWeight: '500' }}>{error}</p>}
       </div>
     </div>
   );
